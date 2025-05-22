@@ -16,7 +16,6 @@ import adminProjectRoutes from "./routes/admin/adminProjectRoutes";
 import adminBlogPostRoutes from "./routes/admin/adminBlogPostRoutes"; // Corrected import path
 import adminContactRoutes from "./routes/admin/adminContactRoutes"; // Admin contact routes
 import adminDashboardRoutes from "./routes/admin/adminDashboardRoutes"; // Admin dashboard routes
-import resumeRoutes from "./routes/resumeRoutes"; // Import resume routes
 import adminProfileRoutes from "./routes/admin/adminProfileRoutes"; // Corrected import path for admin profile routes
 
 import { protect } from "./middleware/authMiddleware";
@@ -110,8 +109,7 @@ app.use("/api/auth", authRoutes); // Use the auth routes
 app.use("/api/profile", profileRoutes);
 app.use("/api/projects", projectRoutes); // Use project routes
 app.use("/api/blog", blogPostRoutes); // Public blog routes
-app.use("/api/contact", contactRoutes); // Public contact routes
-app.use("/api/resume", resumeRoutes); // Use resume routes
+app.use("/api/contact", contactRoutes); // Public contact route
 
 // Admin routes
 app.use("/api/admin/projects", protect, adminProjectRoutes);
