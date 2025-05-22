@@ -25,15 +25,42 @@ import { generalRateLimiter } from "./middleware/rateLimitMiddleware"; // Import
 
 const app: Application = express();
 
+// CORS Configuration
+const allowedOrigins: string[] = [
+  "http://localhost:3000", // For local development (React default)
+  "http://localhost:5173", // Common port for Vite dev server
+  // Add your Vercel frontend URL from an environment variable
+];
+
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
+
+const corsOptions = {
+  origin: (
+    origin: string | undefined,
+    callback: (err: Error | null, allow?: boolean) => void
+  ) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg =
+        "The CORS policy for this site does not allow access from the specified Origin.";
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"], // Specify allowed methods
+  allowedHeaders: ["Content-Type", "Authorization"], // Specify allowed headers
+  credentials: true, // If you need to allow cookies or authorization headers
+};
+
 // Apply general rate limiter to all requests (or specific base paths)
 // It's often good to apply this early, but after static file serving if any.
 app.use(generalRateLimiter);
 
 // Middleware
-const corsOptions = {
-  origin: "http://localhost:5173",
-  optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
-};
+
 app.use(cors(corsOptions)); // Configure CORS properly for production later
 app.use(express.json()); // To parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // To parse URL-encoded bodies
