@@ -1,21 +1,27 @@
 import { Router } from "express";
 import * as profileController from "../controllers/profileController"; // Import all controller functions
 import { protect, AuthenticatedRequest } from "../middleware/authMiddleware";
+import { validate } from "../middleware/validationMiddleware"; // Import validate middleware
+import { updateProfileSchema } from "../middleware/validationSchemas"; // Import the schema
 
 const router = Router();
 
 // @route   GET api/profile
 // @desc    Get admin profile information
-// @access  Private (Admin only)
-router.get("/", protect, (req, res, next) =>
+// @access  Public
+router.get("/", (req, res, next) =>
   profileController.getProfile(req as AuthenticatedRequest, res, next)
 );
 
 // @route   PUT api/profile
 // @desc    Update admin profile information
 // @access  Private (Admin only)
-router.put("/", protect, (req, res, next) =>
-  profileController.updateProfile(req as AuthenticatedRequest, res, next)
+router.put(
+  "/",
+  protect,
+  validate(updateProfileSchema), // Apply validation middleware
+  (req, res, next) =>
+    profileController.updateProfile(req as AuthenticatedRequest, res, next)
 );
 
 // @route   POST api/profile/resume

@@ -478,7 +478,7 @@ export const getUniqueBlogCategories = async (
       { $group: { _id: "$categories" } },
       { $project: { _id: 0, name: "$_id" } },
       { $sort: { name: 1 } },
-    ]).exec();
+    ]).exec(); // Added .exec() to execute the aggregation
     res
       .status(200)
       .json({ data: categoriesResult.map((c: { name: string }) => c.name) });

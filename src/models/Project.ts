@@ -148,5 +148,6 @@ async function generateUniqueSlug(
 ProjectSchema.index({ status: 1, order: 1, createdAt: -1 });
 ProjectSchema.index({ slug: 1 });
 ProjectSchema.index({ featured: 1 });
+ProjectSchema.index({ technologies: 1 }); // Added index for technologies
 
 export default mongoose.model<IProject>("Project", ProjectSchema);

@@ -13,7 +13,6 @@ export const login = async (
 
   // Basic input validation
   if (!email || !password) {
-    // Send response and return to stop further execution
     res.status(400).json({ message: "Email and password are required." });
     return;
   }
@@ -21,25 +20,44 @@ export const login = async (
   // Validate email format
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
-    // Send response and return
     res.status(400).json({ message: "Invalid email format." });
     return;
   }
 
   try {
+    console.log(`[AUTH_LOGIN] Attempting login for email: ${email}`);
     const user = await User.findOne({ email });
+
     if (!user) {
-      // Send response and return
-      res.status(401).json({ message: "Invalid credentials." });
+      console.log(`[AUTH_LOGIN] User not found for email: ${email}`);
+      res
+        .status(401)
+        .json({ message: "Invalid credentials. (User not found)" }); // More specific message for debugging
+      return;
+    }
+    console.log(
+      `[AUTH_LOGIN] User found: ${user.email}, ID: ${user.id}. Stored password hash: ${user.password}`
+    );
+
+    console.log(
+      `[AUTH_LOGIN] Comparing provided password: "${password}" with stored hash for user ${user.email}`
+    );
+    const isMatch = await user.comparePassword(password);
+    console.log(
+      `[AUTH_LOGIN] Password comparison result for ${user.email}: ${isMatch}`
+    );
+
+    if (!isMatch) {
+      console.log(`[AUTH_LOGIN] Password mismatch for user: ${user.email}`);
+      res
+        .status(401)
+        .json({ message: "Invalid credentials. (Password mismatch)" }); // More specific message for debugging
       return;
     }
 
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) {
-      // Send response and return
-      res.status(401).json({ message: "Invalid credentials." });
-      return;
-    }
+    console.log(
+      `[AUTH_LOGIN] Password match for ${user.email}. Generating token.`
+    );
 
     const payload = {
       user: {
@@ -50,9 +68,12 @@ export const login = async (
 
     jwt.sign(payload, config.jwtSecret, { expiresIn: "1h" }, (err, token) => {
       if (err) {
-        // Pass error to Express error handler
+        console.error("[AUTH_LOGIN] Error signing JWT:", err);
         return next(err);
       }
+      console.log(
+        `[AUTH_LOGIN] Token generated successfully for ${user.email}`
+      );
       res.status(200).json({
         token,
         user: {
@@ -64,8 +85,7 @@ export const login = async (
       });
     });
   } catch (error) {
-    console.error("Login error:", error);
-    // Pass error to Express error handler
+    console.error("[AUTH_LOGIN] Error during login process:", error);
     next(error);
   }
 };

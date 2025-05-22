@@ -46,6 +46,9 @@ const ContactSubmissionSchema: Schema = new Schema(
   }
 );
 
+// Index for sorting by creation date
+ContactSubmissionSchema.index({ createdAt: -1 });
+
 export default mongoose.model<IContactSubmission>(
   "ContactSubmission",
   ContactSubmissionSchema

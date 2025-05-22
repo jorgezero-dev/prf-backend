@@ -4,7 +4,7 @@ dotenv.config(); // Load .env file
 
 const config = {
   port: process.env.PORT || 5001,
-  mongoURI: process.env.MONGO_URI || "",
+  mongoURI: process.env.MONGODB_URI || "", // Changed from MONGO_URI to MONGODB_URI
   jwtSecret: process.env.JWT_SECRET || "fallback_secret",
 
   // Email configuration
@@ -18,8 +18,19 @@ const config = {
   adminEmail: process.env.ADMIN_EMAIL, // Admin email to send notifications to
 };
 
+console.log("SMTP Config Loaded:", {
+  // Add this console.log for debugging
+  host: config.smtpHost,
+  port: config.smtpPort,
+  user: config.smtpUser,
+  secure: config.smtpSecure,
+  fromName: config.emailFromName,
+  fromAddress: config.emailFromAddress,
+  adminEmail: config.adminEmail,
+});
+
 if (!config.mongoURI) {
-  console.error("FATAL ERROR: MONGO_URI is not defined.");
+  console.error("FATAL ERROR: MONGODB_URI is not defined in .env file."); // Updated error message for clarity
   process.exit(1);
 }
 if (

@@ -65,6 +65,8 @@ const SocialLinkSchema: Schema = new Schema({
 // Interface for the main Profile document
 export interface IProfile extends Document {
   // userId: mongoose.Types.ObjectId; // Optional: if linking to a specific user
+  name: string;
+  title: string;
   biography: string;
   skills: ISkill[];
   education: IEducation[];
@@ -80,6 +82,16 @@ export interface IProfile extends Document {
 const ProfileSchema: Schema = new Schema(
   {
     // userId: { type: Schema.Types.ObjectId, ref: 'User', unique: true, required: false }, // If each user has one profile
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     biography: {
       type: String,
       required: true,

@@ -3,6 +3,7 @@ import cors from "cors";
 import mongoose from "mongoose";
 import config from "./config";
 import rateLimit from "express-rate-limit";
+import path from "path"; // Added path import
 
 // Import routes (we'll create these later)
 import authRoutes from "./routes/authRoutes"; // Corrected import path
@@ -16,15 +17,42 @@ import adminBlogPostRoutes from "./routes/admin/adminBlogPostRoutes"; // Correct
 import adminContactRoutes from "./routes/admin/adminContactRoutes"; // Admin contact routes
 import adminDashboardRoutes from "./routes/admin/adminDashboardRoutes"; // Admin dashboard routes
 import resumeRoutes from "./routes/resumeRoutes"; // Import resume routes
+import adminProfileRoutes from "./routes/admin/adminProfileRoutes"; // Corrected import path for admin profile routes
 
+import { protect } from "./middleware/authMiddleware";
 import { errorHandler } from "./middleware/errorMiddleware";
+import { generalRateLimiter } from "./middleware/rateLimitMiddleware"; // Import general rate limiter
 
 const app: Application = express();
 
+// Apply general rate limiter to all requests (or specific base paths)
+// It's often good to apply this early, but after static file serving if any.
+app.use(generalRateLimiter);
+
 // Middleware
-app.use(cors()); // Configure CORS properly for production later
+const corsOptions = {
+  origin: "http://localhost:5173",
+  optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+};
+app.use(cors(corsOptions)); // Configure CORS properly for production later
 app.use(express.json()); // To parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // To parse URL-encoded bodies
+
+// General logger for /api/admin/projects requests
+app.use(
+  "/api/admin/projects",
+  (req: Request, res: Response, next: NextFunction) => {
+    console.log(
+      `--- APP.TS: Request received for path starting with /api/admin/projects ---`
+    );
+    console.log(`Method: ${req.method}, Original URL: ${req.originalUrl}`);
+    // To see if body is parsed by express.json() before it hits the router
+    console.log(
+      `APP.TS Body Check (after express.json()): ${JSON.stringify(req.body)}`
+    );
+    next();
+  }
+);
 
 // Rate Limiting - Apply to all requests for now, can be more specific
 const limiter = rateLimit({
@@ -59,10 +87,14 @@ app.use("/api/contact", contactRoutes); // Public contact routes
 app.use("/api/resume", resumeRoutes); // Use resume routes
 
 // Admin routes
-app.use("/api/admin/projects", adminProjectRoutes);
-app.use("/api/admin/blog", adminBlogPostRoutes); // Mount admin blog routes
-app.use("/api/admin/contact-submissions", adminContactRoutes); // Mount admin contact routes
-app.use("/api/admin/dashboard", adminDashboardRoutes); // Mount admin dashboard routes
+app.use("/api/admin/projects", protect, adminProjectRoutes);
+app.use("/api/admin/blog", protect, adminBlogPostRoutes); // Mount admin blog routes
+app.use("/api/admin/contact-submissions", protect, adminContactRoutes); // Mount admin contact routes
+app.use("/api/admin/dashboard", protect, adminDashboardRoutes); // Mount admin dashboard routes
+app.use("/api/admin/profile", protect, adminProfileRoutes); // Corrected usage for admin profile routes
+
+// Serve static files from 'public' directory
+app.use(express.static(path.join(__dirname, "../public")));
 
 // Global Error Handler (simple example, can be more sophisticated)
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

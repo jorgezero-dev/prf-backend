@@ -13,6 +13,7 @@ export interface IBlogPost extends Document {
   slug: string;
   content: string; // Markdown or HTML
   author: Types.ObjectId; // Reference to User model
+  categories: string[]; // Added categories
   tags: string[];
   status: "draft" | "published";
   featuredImage?: string; // URL to the image
@@ -56,6 +57,14 @@ const BlogPostSchema: Schema = new Schema(
       ref: "User",
       required: [true, "Author is required"],
     },
+    categories: [
+      // Added categories field
+      {
+        type: String,
+        trim: true,
+        lowercase: true,
+      },
+    ],
     tags: [
       {
         type: String,
@@ -134,6 +143,7 @@ BlogPostSchema.pre<IBlogPost>("save", async function (next) {
 BlogPostSchema.index({ slug: 1 });
 BlogPostSchema.index({ status: 1, publishedAt: -1 }); // For public listing
 BlogPostSchema.index({ author: 1 });
+BlogPostSchema.index({ categories: 1 }); // Added index for categories
 BlogPostSchema.index({ tags: 1 }); // For filtering by tags
 
 const BlogPost = mongoose.model<IBlogPost>("BlogPost", BlogPostSchema);

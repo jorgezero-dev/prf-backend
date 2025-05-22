@@ -38,6 +38,8 @@ export const updateProfile = async (
   next: NextFunction
 ): Promise<void> => {
   const {
+    name, // Added name
+    title, // Added title
     biography,
     skills,
     education,
@@ -45,17 +47,21 @@ export const updateProfile = async (
     profilePictureUrl,
     socialLinks,
     contactEmail,
+    resumeUrl, // Added resumeUrl
   } = req.body;
 
   // Basic validation
   if (
+    name === undefined && // Added name
+    title === undefined && // Added title
     biography === undefined &&
     skills === undefined &&
     education === undefined &&
     workExperience === undefined &&
     profilePictureUrl === undefined &&
     socialLinks === undefined &&
-    contactEmail === undefined
+    contactEmail === undefined &&
+    resumeUrl === undefined // Added resumeUrl
   ) {
     res.status(400).json({ message: "No update data provided." });
     return; // Explicit return
@@ -63,6 +69,8 @@ export const updateProfile = async (
 
   try {
     const profileFields: Partial<IProfile> = {};
+    if (name !== undefined) profileFields.name = name; // Added name
+    if (title !== undefined) profileFields.title = title; // Added title
     if (biography !== undefined) profileFields.biography = biography;
     if (skills !== undefined) profileFields.skills = skills;
     if (education !== undefined) profileFields.education = education;
